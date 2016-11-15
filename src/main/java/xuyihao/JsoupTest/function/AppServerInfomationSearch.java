@@ -70,15 +70,43 @@ public class AppServerInfomationSearch {
 		CommonUtils.output(String.valueOf(detailInfos.size()));
 		for (int i2 = 0; i2 < detailInfos.size(); i2++) {
 			Element detailInfo = detailInfos.get(i2);
-			switch (detailInfo.text().trim()) {
-			case "会话管理":
-				getSessionManagementInfo(detailInfo);
-				break;
-			case "SIP容器":
-				getSIPContainerinfo(detailInfo);
-				break;
-			default:
-				break;
+			Element refEle = detailInfo.getElementsByTag("a").first();
+			String ref = refEle.attr("href");
+			if (ref.contains("forwardName=SessionManager")) {// 会话管理
+				getSessionManagementInfo(ref);
+				continue;
+			}
+			if (ref.contains("forwardName=SIPContainer")) {// SIP容器
+				getSIPContainerinfo(ref);
+				continue;
+			}
+			if (ref.contains("servermanagement.AppserverWebContainer.do")) {
+				getWebContainerInfo(ref);
+				continue;
+			}
+			if (ref.contains("forwardName=PortletContainer")) {
+				getPortletInfo(ref);
+				continue;
+			}
+			if (ref.contains("forwardName=EJBContainer")) {
+				getEJBContainerInfo(ref);
+				continue;
+			}
+			if (ref.contains("forwardName=EJBCache")) {
+				getEJBCacheInfo(ref);
+				continue;
+			}
+			if (ref.contains("forwardName=EJBTimer")) {
+				getEJBTimerInfo(ref);
+				continue;
+			}
+			if (ref.contains("forwardName=ApplicationProfileService")) {
+				getApplicationProfilingInfo(ref);
+				continue;
+			}
+			if (ref.contains("forwardName=TransactionService")) {
+				getTransactionServiceInfo(ref);
+				continue;
 			}
 		}
 
@@ -89,11 +117,9 @@ public class AppServerInfomationSearch {
 	 * 
 	 * @param element
 	 */
-	private void getSessionManagementInfo(Element element) {
+	private void getSessionManagementInfo(String href) {
 		CommonUtils.output("\r\n会话管理信息");
 
-		Element refEle = element.getElementsByTag("a").first();
-		String href = refEle.attr("href");
 		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
 		Document document = sendGetter.parseHtmlToDoc(response);
 
@@ -182,30 +208,232 @@ public class AppServerInfomationSearch {
 	 * 
 	 * @param element
 	 */
-	private void getSIPContainerinfo(Element element) {
+	private void getSIPContainerinfo(String href) {
 		CommonUtils.output("\r\nSIP容器信息");
 
-		Element refEle = element.getElementsByTag("a").first();
-		String href = refEle.attr("href");
 		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
 		Document document = sendGetter.parseHtmlToDoc(response);
-		
-		//常规属性
-		//最大应用程序会话数
+
+		// 常规属性
+		// 最大应用程序会话数
 		Element maxAppSessions = document.getElementById("maxAppSessions");
 		CommonUtils.output(maxAppSessions.attr("value"));
-		
-		//每平均时间段最大消息数
+
+		// 每平均时间段最大消息数
 		Element maxMessagesPerSecond = document.getElementById("maxMessagesPerSecond");
 		CommonUtils.output(maxMessagesPerSecond.attr("value"));
-		
-		//最大分派队列大小
+
+		// 最大分派队列大小
 		Element maxDispatchQueueSize = document.getElementById("maxDispatchQueueSize");
 		CommonUtils.output(maxDispatchQueueSize.attr("value"));
-		
-		//最大响应时间
-		//启用最大响应时间
-		
-		
+
+		// 最大响应时间
+		// 启用最大响应时间
+		Element enableResponseTime = document.getElementById("enableResponseTime");
+		if (enableResponseTime.attr("checked").equals("checked")) {
+			CommonUtils.output(enableResponseTime.attr("name") + " checked");
+		} else {
+			CommonUtils.output(enableResponseTime.attr("name") + " unchecked");
+		}
+		// 最大响应时间
+		Element maxResponseTime = document.getElementById("maxResponseTime");
+		CommonUtils.output(maxResponseTime.attr("value") + "毫秒");
+
+		// 平均时间段,用来计算平均值的时间段（单位：毫秒）。
+		Element averagingPeriod = document.getElementById("averagingPeriod");
+		CommonUtils.output(averagingPeriod.attr("value"));
+
+		// 统计信息更新率,容器计算平均值和将统计信息发布至 PMI 的时间间隔。
+		Element statisticUpdateRate = document.getElementById("statisticUpdateRate");
+		CommonUtils.output(statisticUpdateRate.attr("value"));
 	}
+
+	/**
+	 * Web 容器
+	 * 
+	 * @param href
+	 */
+	private void getWebContainerInfo(String href) {
+		CommonUtils.output("\r\nWeb容器");
+
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+
+		// 启用 servlet 高速缓存
+		Element enableServletCaching = document.getElementById("enableServletCaching");
+		if (enableServletCaching.attr("checked").equals("checked")) {
+			CommonUtils.output("enableServletCaching" + "-->checked");
+		} else {
+			CommonUtils.output("enableServletCaching" + "-->unchecked");
+		}
+
+		// 禁用 servlet 请求和响应池
+		Element disablePooling = document.getElementById("disablePooling");
+		if (disablePooling.attr("checked").equals("checked")) {
+			CommonUtils.output("disablePooling" + "-->checked");
+		} else {
+			CommonUtils.output("disablePooling" + "-->unchecked");
+		}
+	}
+
+	/**
+	 * Portlet 容器
+	 * 
+	 * @param href
+	 */
+	private void getPortletInfo(String href) {
+		CommonUtils.output("\r\nPortlet 容器");
+
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+
+		// 启用 portlet 片段高速缓存
+		Element enablePortletCaching = document.getElementById("enablePortletCaching");
+		if (enablePortletCaching.attr("checked").equals("checked")) {
+			CommonUtils.output("enablePortletCaching" + "-->checked");
+		} else {
+			CommonUtils.output("enablePortletCaching" + "-->unchecked");
+		}
+	}
+
+	/**
+	 * EJBContainer
+	 * 
+	 * @param href
+	 */
+	private void getEJBContainerInfo(String href) {
+		CommonUtils.output("\r\nEJB 容器");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+
+		// 不活动的池清除时间间隔---指定容器检查可用的 bean 实例池的间隔，以确定是否可以删除一些实例以减少内存的使用。
+		Element inactivePoolCleanupInterval = document.getElementById("inactivePoolCleanupInterval");
+		CommonUtils.output(inactivePoolCleanupInterval.attr("value") + "ms");
+	}
+
+	/**
+	 * EJB 高速缓存设置
+	 * 
+	 * @param href
+	 */
+	private void getEJBCacheInfo(String href) {
+		CommonUtils.output("\r\nEJB 高速缓存设置");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+
+		// 清除时间间隔-->指定容器尝试从高速缓存中除去未使用的项的间隔，这样可以将项的总数减少到高速缓存大小的值。
+		Element cleanupInterval = document.getElementById("cleanupInterval");
+		CommonUtils.output(cleanupInterval.attr("value") + "ms");
+
+		// 高速缓存大小-->指定 EJB 容器内的活动实例列表中的存储区数。
+		Element cacheSize = document.getElementById("cacheSize");
+		CommonUtils.output(cacheSize.attr("value") + "存储区");
+	}
+
+	/**
+	 * EJB 计时器服务设置
+	 * 
+	 * @param href
+	 */
+	private void getEJBTimerInfo(String href) {
+		CommonUtils.output("\r\nEJB 计时器服务设置");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+
+		// 使用内部 EJB 计时器服务 Scheduler 实例 OR 使用定制 Scheduler 实例
+		Element useInternal = document.getElementById("useInternal");
+		if (useInternal.attr("checked").equals("checked")) {// 使用内部 EJB 计时器服务
+																												// Scheduler 实例
+			// 数据源 JNDI 名称-->指定存储持久 EJB 计时器的数据源的名称。
+			Element datasourceJNDIName = document.getElementById("datasourceJNDIName");
+			for (Element option : datasourceJNDIName.getElementsByTag("option")) {
+				if (option.attr("selected").equals("selected")) {
+					CommonUtils.output("datasourceJNDIName" + "---> " + option.attr("value"));
+				}
+			}
+			// 表前缀--->指定附加至 Scheduler 表的前缀字符串。如果每个 Scheduler 指定不同的前缀字符串，则多个独立
+			// Scheduler 可共享同一数据库。
+			Element tablePrefix = document.getElementById("tablePrefix");
+			CommonUtils.output(tablePrefix.attr("value"));
+			// 轮询时间间隔--->指定 Scheduler 轮询数据库以获取到期 EJB 计时器的时间间隔（以秒计）。
+			Element pollInterval = document.getElementById("pollInterval");
+			CommonUtils.output(pollInterval.attr("value") + "s");
+			// 计时器线程数--->指定用于计时器的所需要的最大线程数。
+			Element numAlarmThreads = document.getElementById("numAlarmThreads");
+			CommonUtils.output(numAlarmThreads.attr("value"));
+		} else {// 使用定制 Scheduler 实例
+			// Scheduler JNDI 名称--->指定要用于管理和维持 EJB 计时器的 Scheduler 实例的 JNDI 名称。
+			Element schedulerJNDIName = document.getElementById("schedulerJNDIName");
+			for (Element option : schedulerJNDIName.getElementsByTag("option")) {
+				if (option.attr("selected").equals("selected")) {
+					CommonUtils.output("schedulerJNDIName" + "--->" + option.attr("value"));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Application profiling 服务
+	 * 
+	 * @param href
+	 */
+	private void getApplicationProfilingInfo(String href) {
+		CommonUtils.output("\r\nEJB 计时器服务设置");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+
+		// 在服务器启动时启用服务--->指定在服务器启动时此服务器是否尝试启动指定的服务。
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable-->" + enable.attr("checked"));
+
+		// 5.x 兼容性方式--->指定在设置为 True 时，使用 application profiling 的 J2EE 1.3
+		// 应用程序的运行状态与它们在 V5.x 发行版中运行状态相同。以此方式操作会导致数据库访问期间发生意外死锁。此处，任务不会在 J2EE 1.3 和
+		// J2EE 1.4 应用程序之间的远程调用上传播。此行为可能会导致使用意外的访问意向策略，如果服务器上安装了配置有 application
+		// profiling 的应用程序，则此方式还会导致性能降低。在设置为 False 时，使用 application profiling 的 J2EE
+		// 1.3 应用程序在运行时使用的约束与 J2EE 1.4
+		// 应用程序所使用的相同。在此方式中，仅在开始新工作单元时才建立任务。完整的工作单元只在一个任务下运行。从 V6.0 发行版起，已不支持在 V5.x
+		// 兼容性方式设置为 True 的情况下运行的 J2EE 1.3 应用程序。缺省值是 True。
+		Element compatibility = document.getElementById("compatibility");
+		CommonUtils.output("compatibility-->" + compatibility.attr("checked"));
+	}
+
+	/**
+	 * 事务服务
+	 * 
+	 * @param href
+	 */
+	private void getTransactionServiceInfo(String href) {
+		CommonUtils.output("\r\nEJB 事务服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+
+		// 配置
+		// 常规属性
+
+		// 总事务生存期超时
+		Element totalTranLifetimeTimeout = document.getElementById("totalTranLifetimeTimeout");
+		CommonUtils.output("totalTranLifetimeTimeout--->" + totalTranLifetimeTimeout.attr("value"));
+
+		// 异步响应超时
+		Element asyncResponseTimeout = document.getElementById("asyncResponseTimeout");
+		CommonUtils.output("asyncResponseTimeout--->" + asyncResponseTimeout.attr("value"));
+
+		// 客户机非活动超时
+		Element clientInactivityTimeout = document.getElementById("clientInactivityTimeout");
+		CommonUtils.output("clientInactivityTimeout--->" + clientInactivityTimeout.attr("value"));
+
+		// 最大事务超时数
+		Element propogatedOrBMTTranLifetimeTimeout = document.getElementById("propogatedOrBMTTranLifetimeTimeout");
+		CommonUtils.output("propogatedOrBMTTranLifetimeTimeout--->" + propogatedOrBMTTranLifetimeTimeout.attr("value"));
+
+		// 试探性重试限制
+		Element heuristicRetryLimit = document.getElementById("heuristicRetryLimit");
+		CommonUtils.output("heuristicRetryLimit--->" + heuristicRetryLimit.attr("value"));
+
+		// 试探性重试等待
+		Element heuristicRetryWait = document.getElementById("heuristicRetryWait");
+		CommonUtils.output("heuristicRetryWait--->" + heuristicRetryWait.attr("value"));
+
+	}
+
 }
