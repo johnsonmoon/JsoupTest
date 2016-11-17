@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import xuyihao.JsoupTest.function.AppServerInfomationSearch;
+import xuyihao.JsoupTest.function.WebServerInformationSearch;
 import xuyihao.JsoupTest.util.CommonUtils;
 
 /**
@@ -20,6 +21,7 @@ public class App {
 		if (sendGetter.isExist()) {// 存在
 			if (sendGetter.logon()) {// 登录成功
 				CommonUtils.output("登录成功");
+				//------------------------App server
 				String response = sendGetter
 						.getHtmlResp("/ibm/console/navigatorCmd.do?forwardName=ApplicationServer.content.main");
 				Document doc1 = sendGetter.parseHtmlToDoc(response);
@@ -37,6 +39,21 @@ public class App {
 					AppServerInfomationSearch appServerInfomationSearch = new AppServerInfomationSearch(sendGetter);
 					appServerInfomationSearch.searchAppServerInfomation(href);
 				}
+
+				//-------------------------Web server
+				CommonUtils.output("\r\n\r\n");
+				String webServerResponse = sendGetter.getHtmlResp("/ibm/console/navigatorCmd.do?forwardName=WebServer.content.main");
+				Document doc2 = sendGetter.parseHtmlToDoc(webServerResponse);
+				Elements tableWebServer = doc2.getElementsByClass("table-row");
+				int size2 = tableWebServer.size();
+				for(int j = 0; j < size2; j++){// 一个个查找Web server 的信息
+					Elements baseInfo2 = tableWebServer.get(j).getElementsByClass("collection-table-text");
+					CommonUtils.output(baseInfo2.get(1).text() + "-----" + baseInfo2.get(2).text() + "-----" + baseInfo2.get(3).text() + "-----" + baseInfo2.get(4).text());
+					String href2 = baseInfo2.get(1).getElementsByTag("a").last().attr("href");
+					WebServerInformationSearch webServerInformationSearch = new WebServerInformationSearch(sendGetter);
+					webServerInformationSearch.searchWebServerInfomation(href2);
+				}
+
 			} else {
 				CommonUtils.output("登录不成功");
 			}

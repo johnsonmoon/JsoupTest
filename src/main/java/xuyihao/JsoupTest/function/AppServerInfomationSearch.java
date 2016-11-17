@@ -7,6 +7,8 @@ import org.jsoup.select.Elements;
 import xuyihao.JsoupTest.RequestSendGetter;
 import xuyihao.JsoupTest.util.CommonUtils;
 
+import java.awt.*;
+
 /**
  * 
  * @Author Xuyh created at 2016年11月15日 下午1:35:28
@@ -66,6 +68,8 @@ public class AppServerInfomationSearch {
 
 		// ------------------------------------------具体信息
 
+		getPortInfo(doc);
+
 		Elements detailInfos = doc.getElementsByClass("nav-bullet");
 		CommonUtils.output(String.valueOf(detailInfos.size()));
 		for (int i2 = 0; i2 < detailInfos.size(); i2++) {
@@ -108,14 +112,63 @@ public class AppServerInfomationSearch {
 				getTransactionServiceInfo(ref);
 				continue;
 			}
+			if(ref.contains("forwardName=DynamicCache")){
+				getDynamicCacheInfo(ref);
+				continue;
+			}
+			if(ref.contains("CompensationService")){
+				getCompensationServiceInfo(ref);
+				continue;
+			}
+			if(ref.contains("forwardName=I18NService")){
+				getI18NServiceInfo(ref);
+				continue;
+			}
+			if(ref.contains("forwardName=ObjectPoolService")){
+				getObjectPoolServiceInfo(ref);
+				continue;
+			}
+			if(ref.contains("forwardName=ObjectRequestBroker")){
+				getObjectRequestBrokerInfo(ref);
+				continue;
+			}
+			if(ref.contains("forwardName=StartupBeansService")){
+				getStartupBeansServiceInfo(ref);
+				continue;
+			}
+			if(ref.contains("forwardName=ActivitySessionService")){
+				getActivitySessionServiceInfo(ref);
+				continue;
+			}
+			if(ref.contains("forwardName=WorkAreaService")){
+				getWorkAreaServiceInfo(ref);
+				continue;
+			}
+			if(ref.contains("forwardName=SIBService")){
+				getSIBServiceInfo(ref);
+				continue;
+			}
 		}
 
 	}
 
 	/**
+	 * 获取端口信息
+	 *
+	 * @param document
+     */
+	private void getPortInfo(Document document){
+		Elements table = document.getElementsByClass("table-row");
+		for(Element row : table){
+			Elements infos = row.getElementsByClass("collection-table-text");
+			CommonUtils.output(infos.first().text() + "--->" + infos.last().text());
+		}
+	}
+
+	/**
 	 * 会话管理信息
 	 * 
-	 * @param element
+	 * @param
 	 */
 	private void getSessionManagementInfo(String href) {
 		CommonUtils.output("\r\n会话管理信息");
@@ -206,7 +259,7 @@ public class AppServerInfomationSearch {
 	/**
 	 * SIP容器
 	 * 
-	 * @param element
+	 * @param
 	 */
 	private void getSIPContainerinfo(String href) {
 		CommonUtils.output("\r\nSIP容器信息");
@@ -407,6 +460,7 @@ public class AppServerInfomationSearch {
 		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
 		Document document = sendGetter.parseHtmlToDoc(response);
 
+		//-------------------------------------------
 		// 配置
 		// 常规属性
 
@@ -434,6 +488,256 @@ public class AppServerInfomationSearch {
 		Element heuristicRetryWait = document.getElementById("heuristicRetryWait");
 		CommonUtils.output("heuristicRetryWait--->" + heuristicRetryWait.attr("value"));
 
+		//为试探性报告启用记录
+		Element enableLoggingForHeuristicReporting =  document.getElementById("enableLoggingForHeuristicReporting");
+		CommonUtils.output("enableLoggingForHeuristicReporting" + " ---> " + enableLoggingForHeuristicReporting.attr("checked"));
+
+		//试探性完成指导
+		Element LPSHeuristicCompletion = document.getElementById("LPSHeuristicCompletion");
+		Elements options = LPSHeuristicCompletion.getElementsByTag("option");
+		//COMMIT 落实 || ROLLBACK 回滚 || MANUAL 手工
+		for(Element option : options){
+			if(option.attr("selected").equals("selected")){
+				CommonUtils.output("LPSHeuristicCompletion ---> " + option.attr("value"));
+			}
+		}
+
+		// 启用文件锁定
+		Element enableFileLocking = document.getElementById("enableFileLocking");
+		CommonUtils.output("enableFileLocking ---> " + enableFileLocking.attr("checked"));
+
+		//启用协议安全性
+		Element enableProtocolSecurity = document.getElementById("enableProtocolSecurity");
+		CommonUtils.output("enableProtocolSecurity ---> " + enableProtocolSecurity.attr("checked"));
+
+		//HTTP 代理前缀
+		Element httpProxyPrefix = document.getElementById("httpProxyPrefix");
+		CommonUtils.output("httpProxyPrefix--->" + httpProxyPrefix.attr("value"));
+
+		//HTTPS 代理前缀
+		Element httpsProxyPrefix = document.getElementById("httpsProxyPrefix");
+		CommonUtils.output("httpsProxyPrefix--->" + httpsProxyPrefix.attr("value"));
+
+		//-------------------------------------------
+		//运行时
+		String hrefSub = document.getElementsByClass("tabs-item").last().attr("href");
+		String response2 = sendGetter.getHtmlResp("/ibm/console/" + hrefSub);
+		Document document2 = sendGetter.parseHtmlToDoc(response2);
+		//事务日志目录
+		Element mbeanTransactionLogDirectory = document2.getElementById("mbeanTransactionLogDirectory");
+		CommonUtils.output("mbeanTransactionLogDirectory--->" + mbeanTransactionLogDirectory.text());
+		//手工事务
+		Element mbeanManualTransactions = document2.getElementById("mbeanManualTransactions");
+		CommonUtils.output("mbeanManualTransactions--->" + mbeanManualTransactions.text());
+		//重试事务
+		Element mbeanRetryTransactions = document2.getElementById("mbeanRetryTransactions");
+		CommonUtils.output("mbeanRetryTransactions--->" + mbeanRetryTransactions.text());
+		//试探性事务
+		Element mbeanHeuristicTransactions = document2.getElementById("mbeanHeuristicTransactions");
+		CommonUtils.output("mbeanHeuristicTransactions--->" + mbeanHeuristicTransactions.text());
+		// 已导入的已就绪事务
+		Element mbeanImportedPreparedTransactions = document2.getElementById("mbeanImportedPreparedTransactions");
+		CommonUtils.output("mbeanImportedPreparedTransactions--->" + mbeanImportedPreparedTransactions.text());
 	}
+
+	/**
+	 * 动态高速缓存服务
+	 *
+	 * @param href
+     */
+	private void getDynamicCacheInfo(String href){
+		CommonUtils.output("\r\n动态高速缓存服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		//常规属性
+		//在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+		//高速缓存大小
+		//cacheSize
+		Element cacheSize = document.getElementById("cacheSize");
+		CommonUtils.output("cacheSize--->" + cacheSize.attr("value") + " 条目");
+		//缺省优先级
+		Element defaultPriority = document.getElementById("defaultPriority");
+		CommonUtils.output("defaultPriority--->" + defaultPriority.attr("value"));
+		//磁盘高速缓存设置
+		//启用磁盘减负
+		Element enableDiskOffload = document.getElementById("enableDiskOffload");
+		CommonUtils.output("enableDiskOffload--->" + enableDiskOffload.attr("checked"));
+	}
+
+	/**
+	 * Compensation 服务
+	 *
+	 * @param href
+     */
+	private void getCompensationServiceInfo(String href){
+		CommonUtils.output("\r\nCompensation 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		// 在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+		//恢复日志目录
+		Element recoveryLogDirectory = document.getElementById("recoveryLogDirectory");
+		CommonUtils.output("recoveryLogDirectory--->" + recoveryLogDirectory.attr("value"));
+		//恢复日志文件大小
+		Element recoveryLogFileSize = document.getElementById("recoveryLogFileSize");
+		CommonUtils.output("recoveryLogFileSize--->" + recoveryLogFileSize.attr("value"));
+		//补偿处理程序重试限制
+		Element compensationHandlerRetryLimit = document.getElementById("compensationHandlerRetryLimit");
+		CommonUtils.output("compensationHandlerRetryLimit--->" + compensationHandlerRetryLimit.attr("value"));
+		//补偿处理程序重试时间间隔
+		Element compensationHandlerRetryInterval = document.getElementById("compensationHandlerRetryInterval");
+		CommonUtils.output("compensationHandlerRetryInterval--->" + compensationHandlerRetryInterval.attr("value"));
+
+	}
+
+	/**
+	 * Internationalization 服务
+	 *
+	 * @param href
+     */
+	private void getI18NServiceInfo(String href){
+		CommonUtils.output("\r\nInternationalization 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		//在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+	}
+
+	/**
+	 * Object pool 服务
+	 *
+	 * @param href
+     */
+	private void getObjectPoolServiceInfo(String href){
+		CommonUtils.output("\r\nObject pool 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		//在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+	}
+
+	/**
+	 * ORB 服务
+	 *
+	 * @param href
+     */
+	private void getObjectRequestBrokerInfo(String href){
+		CommonUtils.output("\r\nORB 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		//常规属性
+		//请求超时
+		Element requestTimeout = document.getElementById("requestTimeout");
+		CommonUtils.output("requestTimeout--->" + requestTimeout.attr("value") + "秒");
+		//请求重试次数
+		Element requestRetriesCount = document.getElementById("requestRetriesCount");
+		CommonUtils.output("requestRetriesCount--->" + requestRetriesCount.attr("value") + "重试次数");
+		//请求重试延迟
+		Element requestRetriesDelay = document.getElementById("requestRetriesDelay");
+		CommonUtils.output("requestRetriesDelay--->" + requestRetriesDelay.attr("value") + "毫秒");
+		//连接高速缓存最大值
+		Element connectionCacheMaximum = document.getElementById("connectionCacheMaximum");
+		CommonUtils.output("connectionCacheMaximum--->" + connectionCacheMaximum.attr("value") + "连接");
+		//连接高速缓存最小值
+		Element connectionCacheMinimum = document.getElementById("connectionCacheMinimum");
+		CommonUtils.output("connectionCacheMinimum--->" + connectionCacheMinimum.attr("value") + "连接");
+		//ORB 跟踪
+		Element commTraceEnabled = document.getElementById("commTraceEnabled");
+		CommonUtils.output("commTraceEnabled--->" + commTraceEnabled.attr("checked"));
+		//定位请求超时
+		Element locateRequestTimeout = document.getElementById("locateRequestTimeout");
+		CommonUtils.output("locateRequestTimeout--->" + locateRequestTimeout.attr("value") + "秒");
+		//强制隧道(必需时 || 总是 || 从不)
+		Element forceTunnel = document.getElementById("forceTunnel");
+		Elements options = forceTunnel.getElementsByTag("option");
+		for(Element option : options){
+			if(option.attr("selected").equals("selected")){
+				CommonUtils.output("forceTunnel--->" + option.attr("value"));
+			}
+		}
+		//隧道代理 URL
+		Element tunnelAgentURL = document.getElementById("tunnelAgentURL");
+		CommonUtils.output("tunnelAgentURL--->" + tunnelAgentURL.attr("value"));
+		//按引用传递
+		Element noLocalCopies = document.getElementById("noLocalCopies");
+		CommonUtils.output("noLocalCopies--->" + noLocalCopies.attr("checked"));
+	}
+
+	/**
+	 * Startup bean 服务
+	 *
+	 * @param href
+     */
+	private void getStartupBeansServiceInfo(String href){
+		CommonUtils.output("\r\nStartup bean 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		// 在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+	}
+
+	/**
+	 * ActivitySession 服务
+	 *
+	 * @param href
+     */
+	private void getActivitySessionServiceInfo(String href){
+		CommonUtils.output("\r\nActivitySession 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		//在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+		// 缺省超时
+		Element defaultTimeout = document.getElementById("defaultTimeout");
+		CommonUtils.output("defaultTimeout-->" + defaultTimeout.attr("value") + "秒");
+	}
+
+	/**
+	 * Work Area 服务
+	 *
+	 * @param href
+     */
+	private void getWorkAreaServiceInfo(String href){
+		CommonUtils.output("\r\nWork Area 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		//在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+		//最大发送大小
+		Element maxSendSize = document.getElementById("maxSendSize");
+		CommonUtils.output("maxSendSize--->" + maxSendSize.attr("value") + "字节");
+		// 最大接收大小
+		Element maxReceiveSize = document.getElementById("maxReceiveSize");
+		CommonUtils.output("maxReceiveSize--->" + maxReceiveSize.attr("value") + "字节");
+		//启用 Web Service 传播
+		Element enableWebServicePropagation = document.getElementById("enableWebServicePropagation");
+		CommonUtils.output("enableWebServicePropagation--->" + enableWebServicePropagation.attr("checked"));
+	}
+
+	/**
+	 * SIB 服务
+	 *
+ 	 * @param href
+     */
+	private void getSIBServiceInfo(String href){
+		CommonUtils.output("\r\nSIB 服务");
+		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
+		Document document = sendGetter.parseHtmlToDoc(response);
+		//在服务器启动时启用服务
+		Element enable = document.getElementById("enable");
+		CommonUtils.output("enable--->" + enable.attr("checked"));
+		//启用配置重新装入
+		Element configurationReloadEnabled = document.getElementById("configurationReloadEnabled");
+		CommonUtils.output("configurationReloadEnabled--->" + configurationReloadEnabled.attr("checked"));
+	}
+
 
 }
