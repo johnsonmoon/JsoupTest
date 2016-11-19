@@ -5,6 +5,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import xuyihao.JsoupTest.function.AppServerInfomationSearch;
+import xuyihao.JsoupTest.function.MQServerInformationSearch;
+import xuyihao.JsoupTest.function.WebAppInformationSearch;
 import xuyihao.JsoupTest.function.WebServerInformationSearch;
 import xuyihao.JsoupTest.util.CommonUtils;
 
@@ -21,6 +23,7 @@ public class App {
 		if (sendGetter.isExist()) {// 存在
 			if (sendGetter.logon()) {// 登录成功
 				CommonUtils.output("登录成功");
+
 				//------------------------App server
 				String response = sendGetter
 						.getHtmlResp("/ibm/console/navigatorCmd.do?forwardName=ApplicationServer.content.main");
@@ -54,6 +57,35 @@ public class App {
 					webServerInformationSearch.searchWebServerInfomation(href2);
 				}
 
+
+				//-------------------------MQ server
+				CommonUtils.output("\r\n\r\n");
+				String MQServerResponse = sendGetter.getHtmlResp("/ibm/console/com.ibm.ws.console.sib.sibresources.forwardCmd.do?forwardName=SIBMQServer.content.main");
+				Document doc3 = sendGetter.parseHtmlToDoc(MQServerResponse);
+				Elements tableMQServer = doc3.getElementsByClass("table-row");
+				int size3 = tableMQServer.size();
+				for(int j = 0; j < size3; j++){// 一个个查找MQ server 的信息
+					Elements baseInfo3 = tableMQServer.get(j).getElementsByClass("collection-table-text");
+					CommonUtils.output("\r\n--------------" + baseInfo3.text());
+					String href3 = baseInfo3.get(1).getElementsByTag("a").last().attr("href");
+					MQServerInformationSearch mqServerInformationSearch = new MQServerInformationSearch(sendGetter);
+					mqServerInformationSearch.searchMQServerInformation(href3);
+				}
+
+
+				//---------------------------Web App
+				CommonUtils.output("\r\n\r\n");
+				String WebAppResponse = sendGetter.getHtmlResp("/ibm/console/navigatorCmd.do?forwardName=ApplicationDeployment.content.main");
+				Document doc4 = sendGetter.parseHtmlToDoc(WebAppResponse);
+				Elements tableWebApp = doc4.getElementsByClass("table-row");
+				for(int k = 0; k < tableWebApp.size(); k++){
+					Element webAppRow = tableWebApp.get(k);
+					Element singleWebApp = webAppRow.getElementsByAttributeValue("headers", "name").last();
+					CommonUtils.output("\r\n------------" + singleWebApp.text());
+					String href4 = singleWebApp.getElementsByTag("a").last().attr("href");
+					WebAppInformationSearch webAppInformationSearch = new WebAppInformationSearch(sendGetter);
+					webAppInformationSearch.getWebAppInformation("/ibm/console/" + href4);
+				}
 			} else {
 				CommonUtils.output("登录不成功");
 			}
