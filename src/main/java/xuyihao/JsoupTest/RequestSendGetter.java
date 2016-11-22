@@ -57,13 +57,10 @@ public class RequestSendGetter {
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("j_username", userName));
 		params.add(new BasicNameValuePair("j_password", password));
-
 		String initCookie = "JSESSIONID=" + jSessionId;
-
-		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000).build();
+		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(20000).setConnectTimeout(20000).build();
 		httpPost.setHeader("Cookie", initCookie);
 		httpPost.setConfig(requestConfig);
-
 		try {
 			CloseableHttpClient httpClient = HttpUtil.createSSLInsecureClient();
 			HttpClientContext context;
@@ -81,21 +78,19 @@ public class RequestSendGetter {
 				} else if (cookieName.equalsIgnoreCase("LtpaToken2")) {
 					ltpaToken2 = value;
 				}
-			} // end foreach
+			}
 
-			initCookie = initCookie + ";LtpaToken=" + ltpaToken + ";ltpaToken2=" + ltpaToken2;
-			HttpGet httpGet = new HttpGet("https://" + ip + ":" + port + "/ibm/console/secure/securelogon.do?action=force");
+			if (ltpaToken != null && !ltpaToken.equals("")) {
+				initCookie += ";LtpaToken=" + ltpaToken;
+			}
+			if (ltpaToken2 != null && !ltpaToken2.equals("")) {
+				initCookie += ";ltpaToken2=" + ltpaToken2;
+			}
+			HttpGet httpGet = new HttpGet("https://" + ip + ":" + port + "/ibm/console/login.do?action=secure");
 			httpGet.setHeader("Cookie", initCookie);
 			httpGet.setConfig(requestConfig);
 			HttpUtil.getHttpResponse(httpGet);
 			allCookie = initCookie;
-			/*
-			 * httpGet = new HttpGet(
-			 * "https://10.1.240.161:9043/ibm/console/navigation.do?wpageid=com.ibm.isclite.welcomeportlet.layoutElement.A&moduleRef=com.ibm.isclite.ISCAdminPortlet"
-			 * ); httpGet.setHeader("Cookie", initCookie);
-			 * httpGet.setConfig(requestConfig); String resp =
-			 * HttpUtil.getHttpResponse(httpGet);
-			 */
 			isLogon = true;
 		} catch (Exception e) {
 			e.printStackTrace();

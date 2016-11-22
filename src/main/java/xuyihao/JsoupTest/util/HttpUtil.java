@@ -95,27 +95,20 @@ public class HttpUtil {
 	}
 
 	public static String getHttpResponse(HttpGet httpGet) {
-
 		String str = "";
-
 		CloseableHttpClient httpclient = null;
 		try {
-
 			URI uri = httpGet.getURI();
 			if (uri.getScheme().contains("https")) {
 				httpclient = createSSLInsecureClient();
 			} else {
 				httpclient = HttpClientBuilder.create().build();
 			}
-
 			// 设置请求和传输超时时间
 			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(50000).setConnectTimeout(50000).build();
 			httpGet.setConfig(requestConfig);
-
 			CloseableHttpResponse response = httpclient.execute(httpGet);
-
 			int state = response.getStatusLine().getStatusCode();
-
 			if (state == 404) {
 				return null;
 			}
@@ -141,9 +134,7 @@ public class HttpUtil {
 				e.printStackTrace();
 			}
 		}
-
 		return str;
-
 	}
 
 	public static String getDataUseBasicAuth(String path, String userName, String passWord) {
