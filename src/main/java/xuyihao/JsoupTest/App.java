@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 public class App {
 	private static RequestSendGetter sendGetter = null;
 	private static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+	private static String version;//was的版本，在初始页面获取，不同版本号的was在页面布局上会有细微的差别
 
 	public static void main(String[] args) {
 		output("Input ip-port-name-password:");
@@ -31,8 +32,20 @@ public class App {
 		String password = input();
 		sendGetter = new RequestSendGetter(ip, port, userName, password);
 		if (sendGetter.isExist()) {// 存在
-			if (sendGetter.logon()) {// 登录成功
+			if (sendGetter.login()) {// 登录成功
 				CommonUtils.output("登录成功");
+				//欢迎页面
+				String welcomePage = sendGetter.getHtmlResp("/ibm/console");
+				Document welcomPageDoc = sendGetter.parseHtmlToDoc(welcomePage);
+				Element detailPageElement = welcomPageDoc.getElementsByAttributeValue("name", "detail").last();
+				String detailHref = detailPageElement.attr("src");
+				String detailPage = sendGetter.getHtmlResp(detailHref);
+				Document detailPageDoc = sendGetter.parseHtmlToDoc(detailPage);
+				Element versionElement = detailPageDoc.getElementsByClass("portlet-table-body").last();
+				if(versionElement != null){
+					version = versionElement.text();
+				}
+				//导航页面
 				String navigationPage = sendGetter.getHtmlResp("/ibm/console/nsc.do");
 				Document navigationPageDoc = sendGetter.parseHtmlToDoc(navigationPage);
 				String hrefAppServer = "";
@@ -66,13 +79,28 @@ public class App {
 				int size = elements.size();
 				for (int i = 0; i < size; i++) {// 一个个查找Application server 的信息
 					Elements baseInfo = elements.get(i).getElementsByClass("collection-table-text");
-					Element serverInfo = baseInfo.get(0).getElementsByTag("a").first();
-					String name = serverInfo.text();
-					String href = serverInfo.attr("href");
-					String nodeName = baseInfo.get(1).text();
-					String version = baseInfo.get(2).text();
+					if(baseInfo.size() < 1){
+						continue;
+					}
+					String name;
+					String href;
+					String nodeName;
+					String appServerversion;
+					if(version.contains("8.")){//8.0/8.5...
+						Element serverInfo = baseInfo.get(0).getElementsByTag("a").first();
+						name = serverInfo.text();
+						href = serverInfo.attr("href");
+						nodeName = baseInfo.get(1).text();
+						appServerversion = baseInfo.get(3).text();
+					}else {//6.0/6.1...
+						Element serverInfo = baseInfo.get(0).getElementsByTag("a").first();
+						name = serverInfo.text();
+						href = serverInfo.attr("href");
+						nodeName = baseInfo.get(1).text();
+						appServerversion = baseInfo.get(2).text();
+					}
 					CommonUtils.output("----------------------------------------\r\n\r\nAppServer: " + name + " NodeName: "
-							+ nodeName + " version: " + version);
+							+ nodeName + " version: " + appServerversion);
 					AppServerInfomationSearch appServerInfomationSearch = new AppServerInfomationSearch(sendGetter);
 					appServerInfomationSearch.searchAppServerInfomation(href);
 				}
@@ -84,9 +112,29 @@ public class App {
 				int size2 = tableWebServer.size();
 				for (int j = 0; j < size2; j++) {// 一个个查找Web server 的信息
 					Elements baseInfo2 = tableWebServer.get(j).getElementsByClass("collection-table-text");
-					CommonUtils.output(baseInfo2.get(1).text() + "-----" + baseInfo2.get(2).text() + "-----"
-							+ baseInfo2.get(3).text() + "-----" + baseInfo2.get(4).text());
-					String href2 = baseInfo2.get(1).getElementsByTag("a").last().attr("href");
+					if(baseInfo2.size() < 1){
+						continue;
+					}
+					String webServerName;
+					String webServerType;
+					String webServerNodeName;
+					String webServerVersion;
+					String href2;
+					if(version.contains("8.")){//8.0/8.5...
+						webServerName = baseInfo2.get(1).text();
+						webServerType = baseInfo2.get(2).text();
+						webServerNodeName = baseInfo2.get(3).text();
+						webServerVersion = baseInfo2.get(4).text();
+						href2 = baseInfo2.get(1).getElementsByTag("a").last().attr("href");
+						CommonUtils.output(webServerName + "-----" + webServerType + "-----" + webServerNodeName + "-----" + webServerVersion);
+					}else {//6.0/6.1...
+						webServerName = baseInfo2.get(1).text();
+						webServerType = baseInfo2.get(2).text();
+						webServerNodeName = baseInfo2.get(3).text();
+						webServerVersion = baseInfo2.get(5).text();
+						href2 = baseInfo2.get(1).getElementsByTag("a").last().attr("href");
+						CommonUtils.output(webServerName + "-----" + webServerType + "-----" + webServerNodeName + "-----" + webServerVersion);
+					}
 					WebServerInformationSearch webServerInformationSearch = new WebServerInformationSearch(sendGetter);
 					webServerInformationSearch.searchWebServerInfomation(href2);
 				}
@@ -98,7 +146,10 @@ public class App {
 				int size3 = tableMQServer.size();
 				for (int j = 0; j < size3; j++) {// 一个个查找MQ server 的信息
 					Elements baseInfo3 = tableMQServer.get(j).getElementsByClass("collection-table-text");
-					CommonUtils.output("\r\n--------------" + baseInfo3.text());
+					if(baseInfo3.size() < 1){
+						continue;
+					}
+					CommonUtils.output("\r\n--------------" + baseInfo3.get(1).text());
 					String href3 = baseInfo3.get(1).getElementsByTag("a").last().attr("href");
 					MQServerInformationSearch mqServerInformationSearch = new MQServerInformationSearch(sendGetter);
 					mqServerInformationSearch.searchMQServerInformation(href3);

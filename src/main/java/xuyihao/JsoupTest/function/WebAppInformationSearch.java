@@ -21,13 +21,21 @@ public class WebAppInformationSearch {
 		Document document = sendGetter.parseHtmlToDoc(response);
 		// 名称
 		Element name = document.getElementById("name");
-		CommonUtils.output("name--->" + name.text());
+		if(name != null){
+			CommonUtils.output("name--->" + name.text());
+		}else{
+			CommonUtils.output("27" + "为空");
+		}
 		// 应用程序引用验证
 		Element validation = document.getElementById("validation");
-		for (Element option : validation.getElementsByTag("option")) {
-			if (option.attr("selected").equals("selected")) {
-				CommonUtils.output("validation--->" + option.text());
+		if(validation != null){
+			for (Element option : validation.getElementsByTag("option")) {
+				if (option.attr("selected").equals("selected")) {
+					CommonUtils.output("validation--->" + option.text());
+				}
 			}
+		}else{
+			CommonUtils.output("38" + "为空");
 		}
 		Elements attrRefs = document.getElementsByClass("nav-bullet");
 		for (Element refRow : attrRefs) {
@@ -53,13 +61,25 @@ public class WebAppInformationSearch {
 		Document document = sendGetter.parseHtmlToDoc(response);
 		// 启动顺序
 		Element startingWeight = document.getElementById("startingWeight");
-		CommonUtils.output("startingWeight--->" + startingWeight.attr("value"));
+		if(startingWeight != null){
+			CommonUtils.output("startingWeight--->" + startingWeight.attr("value"));
+		}else{
+			CommonUtils.output("67" + "为空");
+		}
 		// 在服务器完成启动之前启动应用程序
 		Element backgroundApplication = document.getElementById("backgroundApplication");
-		CommonUtils.output("backgroundApplication--->" + backgroundApplication.attr("checked"));
+		if(backgroundApplication != null){
+			CommonUtils.output("backgroundApplication--->" + backgroundApplication.attr("checked"));
+		}else{
+			CommonUtils.output("74" + "为空");
+		}
 		// 为资源创建 MBean
 		Element createMBeansForResources = document.getElementById("createMBeansForResources");
-		CommonUtils.output("createMBeansForResources--->" + createMBeansForResources.attr("checked"));
+		if(createMBeansForResources != null){
+			CommonUtils.output("createMBeansForResources--->" + createMBeansForResources.attr("checked"));
+		}else{
+			CommonUtils.output("81" + "为空");
+		}
 	}
 
 	/**
@@ -71,12 +91,16 @@ public class WebAppInformationSearch {
 		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
 		Document document = sendGetter.parseHtmlToDoc(response);
 		Element table = document.getElementsByClass("table-row").last();
-		Elements rows = table.getElementsByClass("collection-table-text");
-		// URI
-		CommonUtils.output(rows.get(2).text());
-		// 模块类型
-		CommonUtils.output(rows.get(3).text());
-		// 服务器(部署在那个服务器上)
-		CommonUtils.output(rows.get(4).text());
+		if(table != null){
+			Elements rows = table.getElementsByClass("collection-table-text");
+			// URI
+			CommonUtils.output(rows.get(2).text());
+			// 模块类型
+			CommonUtils.output(rows.get(3).text());
+			// 服务器(部署在那个服务器上)
+			CommonUtils.output(rows.get(4).text());
+		}else{
+			CommonUtils.output("103" + "为空");
+		}
 	}
 }
