@@ -86,7 +86,7 @@ public class App {
 					String href;
 					String nodeName;
 					String appServerversion;
-					if(version.contains("8.")){//8.0/8.5...
+					if(version.contains("8.") || version.contains("7.")){//8.0/8.5/7.0/7.1...
 						Element serverInfo = baseInfo.get(0).getElementsByTag("a").first();
 						name = serverInfo.text();
 						href = serverInfo.attr("href");
@@ -127,7 +127,7 @@ public class App {
 						webServerVersion = baseInfo2.get(4).text();
 						href2 = baseInfo2.get(1).getElementsByTag("a").last().attr("href");
 						CommonUtils.output(webServerName + "-----" + webServerType + "-----" + webServerNodeName + "-----" + webServerVersion);
-					}else {//6.0/6.1...
+					}else {//6.0/6.1/7.0/7.1...
 						webServerName = baseInfo2.get(1).text();
 						webServerType = baseInfo2.get(2).text();
 						webServerNodeName = baseInfo2.get(3).text();
