@@ -259,8 +259,9 @@ public class AppServerInfomationSearch {
 		Element vnone = document.getElementById("vnone");
 		if(vnone == null){
 			vnone = document.getElementById("none");
-		}else{
-			CommonUtils.output("263" + "为空");
+			if(vnone == null){
+				CommonUtils.output("263" + "为空");
+			}
 		}
 		Element invalidationTimeout = document.getElementById("invalidationTimeout");
 		if(vnone != null && invalidationTimeout != null) {
@@ -334,14 +335,19 @@ public class AppServerInfomationSearch {
 		if(maxAppSessions != null){
 			CommonUtils.output(maxAppSessions.attr("value"));
 		}else{
-			CommonUtils.output("" + "为空");
+			CommonUtils.output("338" + "为空");
 		}
 		// 每平均时间段最大消息数
-		Element maxMessagesPerSecond = document.getElementById("maxMessagesPerSecond");
+		Element maxMessagesPerSecond = document.getElementById("maxMessagesPerSecond");//8.X--6.X
 		if(maxMessagesPerSecond != null){
 			CommonUtils.output(maxMessagesPerSecond.attr("value"));
 		}else{
-			CommonUtils.output("" + "为空");
+			maxMessagesPerSecond = document.getElementById("maxMessageRate");//7.X
+			if(maxMessagesPerSecond != null){
+				CommonUtils.output(maxMessagesPerSecond.attr("value"));
+			}else{
+				CommonUtils.output("345" + "为空");
+			}
 		}
 
 

@@ -3,8 +3,8 @@ xuyihao\JsoupTest\util\HttpUtil$1.class
 xuyihao\JsoupTest\function\MQServerInformationSearch.class
 xuyihao\JsoupTest\function\WebServerInformationSearch.class
 xuyihao\JsoupTest\util\HttpUtil.class
+xuyihao\JsoupTest\CookieTest.class
 xuyihao\JsoupTest\function\WebAppInformationSearch.class
 xuyihao\JsoupTest\RequestSendGetter.class
-xuyihao\JsoupTest\RequestSendGetter$WebSphereVersion.class
 xuyihao\JsoupTest\function\AppServerInfomationSearch.class
 xuyihao\JsoupTest\util\CommonUtils.class
