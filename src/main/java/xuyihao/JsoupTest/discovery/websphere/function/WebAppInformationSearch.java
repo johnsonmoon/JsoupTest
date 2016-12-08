@@ -1,10 +1,11 @@
-package xuyihao.JsoupTest.function;
+package xuyihao.JsoupTest.discovery.websphere.function;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import xuyihao.JsoupTest.RequestSendGetter;
+import xuyihao.JsoupTest.discovery.websphere.RequestSendGetter;
 import xuyihao.JsoupTest.util.CommonUtils;
+import xuyihao.JsoupTest.util.StackTraceUtil;
 
 /**
  * Created by Xuyh at 2016/11/19 下午 01:50.
@@ -21,21 +22,21 @@ public class WebAppInformationSearch {
 		Document document = sendGetter.parseHtmlToDoc(response);
 		// 名称
 		Element name = document.getElementById("name");
-		if(name != null){
+		if (name != null) {
 			CommonUtils.output("name--->" + name.text());
-		}else{
-			CommonUtils.output("27" + "为空");
+		} else {
+			CommonUtils.output(StackTraceUtil.getCurrentSourceLineInfoString() + "########为空#########");
 		}
 		// 应用程序引用验证
 		Element validation = document.getElementById("validation");
-		if(validation != null){
+		if (validation != null) {
 			for (Element option : validation.getElementsByTag("option")) {
 				if (option.attr("selected").equals("selected")) {
 					CommonUtils.output("validation--->" + option.text());
 				}
 			}
-		}else{
-			CommonUtils.output("38" + "为空");
+		} else {
+			CommonUtils.output(StackTraceUtil.getCurrentSourceLineInfoString() + "########为空#########");
 		}
 		Elements attrRefs = document.getElementsByClass("nav-bullet");
 		for (Element refRow : attrRefs) {
@@ -61,24 +62,24 @@ public class WebAppInformationSearch {
 		Document document = sendGetter.parseHtmlToDoc(response);
 		// 启动顺序
 		Element startingWeight = document.getElementById("startingWeight");
-		if(startingWeight != null){
+		if (startingWeight != null) {
 			CommonUtils.output("startingWeight--->" + startingWeight.attr("value"));
-		}else{
-			CommonUtils.output("67" + "为空");
+		} else {
+			CommonUtils.output(StackTraceUtil.getCurrentSourceLineInfoString() + "########为空#########");
 		}
 		// 在服务器完成启动之前启动应用程序
 		Element backgroundApplication = document.getElementById("backgroundApplication");
-		if(backgroundApplication != null){
+		if (backgroundApplication != null) {
 			CommonUtils.output("backgroundApplication--->" + backgroundApplication.attr("checked"));
-		}else{
-			CommonUtils.output("74" + "为空");
+		} else {
+			CommonUtils.output(StackTraceUtil.getCurrentSourceLineInfoString() + "########为空#########");
 		}
 		// 为资源创建 MBean
 		Element createMBeansForResources = document.getElementById("createMBeansForResources");
-		if(createMBeansForResources != null){
+		if (createMBeansForResources != null) {
 			CommonUtils.output("createMBeansForResources--->" + createMBeansForResources.attr("checked"));
-		}else{
-			CommonUtils.output("81" + "为空");
+		} else {
+			CommonUtils.output(StackTraceUtil.getCurrentSourceLineInfoString() + "########为空#########");
 		}
 	}
 
@@ -91,7 +92,7 @@ public class WebAppInformationSearch {
 		String response = sendGetter.getHtmlResp("/ibm/console/" + href);
 		Document document = sendGetter.parseHtmlToDoc(response);
 		Element table = document.getElementsByClass("table-row").last();
-		if(table != null){
+		if (table != null) {
 			Elements rows = table.getElementsByClass("collection-table-text");
 			// URI
 			CommonUtils.output(rows.get(2).text());
@@ -99,8 +100,8 @@ public class WebAppInformationSearch {
 			CommonUtils.output(rows.get(3).text());
 			// 服务器(部署在那个服务器上)
 			CommonUtils.output(rows.get(4).text());
-		}else{
-			CommonUtils.output("103" + "为空");
+		} else {
+			CommonUtils.output(StackTraceUtil.getCurrentSourceLineInfoString() + "########为空#########");
 		}
 	}
 }

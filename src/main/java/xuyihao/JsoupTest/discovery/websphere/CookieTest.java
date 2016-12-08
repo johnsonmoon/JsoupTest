@@ -1,4 +1,4 @@
-package xuyihao.JsoupTest;
+package xuyihao.JsoupTest.discovery.websphere;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -43,48 +43,62 @@ public class CookieTest {
 		String userPassword = CommonUtils.input();
 		//-----------------------------------------------------------------------------------------------------logon.jsp
 		String responseLogin = executeLoginGet("https://" + ip + ":" + port + "/ibm/console/logon.jsp");
-		CommonUtils.output("\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------logon.jsp\r\n\r\n" + responseLogin);
+		CommonUtils.output(
+				"\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------logon.jsp\r\n\r\n"
+						+ responseLogin);
 		//-----------------------------------------------------------------------------------------------------j_security_check
 		Map<String, String> verifyParams = new HashMap<>();
 		verifyParams.put("j_username", userName);
 		verifyParams.put("j_password", userPassword);
-		String responseSecurityCheck = executeLoginPost("https://" + ip + ":" + port + "/ibm/console/j_security_check", verifyParams);
-		CommonUtils.output("\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------j_security_check\r\n\r\n" + responseSecurityCheck);
+		String responseSecurityCheck = executeLoginPost("https://" + ip + ":" + port + "/ibm/console/j_security_check",
+				verifyParams);
+		CommonUtils.output(
+				"\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------j_security_check\r\n\r\n"
+						+ responseSecurityCheck);
 		//-----------------------------------------------------------------------------------------------------/ibm/console
 		String responseConsole = executeLoginGet("https://" + ip + ":" + port + "/ibm/console/");
-		CommonUtils.output("\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------/ibm/console\r\n\r\n" + responseConsole);
+		CommonUtils.output(
+				"\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------/ibm/console\r\n\r\n"
+						+ responseConsole);
 		//-----------------------------------------------------------------------------------------------------/ibm/console/login.do?action=secure
 		//-----------------------------------------------------------------------------------------------------/ibm/console/secure/securelogon.do
 		//这个请求发送之后可能会有强制登出上一个会话界面返回
 		String str = executeLoginGet("https://" + ip + ":" + port + "/ibm/console/login.do?action=secure");
-		CommonUtils.output("\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------/ibm/console/login.do?action=secure\r\n\r\n" + str);
+		CommonUtils.output(
+				"\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------/ibm/console/login.do?action=secure\r\n\r\n"
+						+ str);
 		Document checked = Jsoup.parse(str);
 		Element forceRadio = checked.getElementById("forceradio");
 		Element submit = checked.getElementsByAttributeValue("name", "submit").last();
 		Element csrfid = checked.getElementsByAttributeValue("name", "csrfid").last();//8.5
-		if(forceRadio != null && submit != null){//会话未关闭
+		if (forceRadio != null && submit != null) {//会话未关闭
 			Map<String, String> forceLoginParams = new HashMap<>();
 			forceLoginParams.put("action", forceRadio.attr("value"));
 			forceLoginParams.put("submit", submit.attr("value"));
-			if(csrfid != null){
+			if (csrfid != null) {
 				forceLoginParams.put("csrfid", csrfid.attr("value"));
 			}
-			String responseForceLogin = executeLoginPost("https://" + ip + ":" + port + "/ibm/console/secure/securelogon.do", forceLoginParams);
-			CommonUtils.output("\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------/ibm/console/secure/securelogon.do\r\n\r\n" + responseForceLogin);
+			String responseForceLogin = executeLoginPost("https://" + ip + ":" + port + "/ibm/console/secure/securelogon.do",
+					forceLoginParams);
+			CommonUtils.output(
+					"\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------/ibm/console/secure/securelogon.do\r\n\r\n"
+							+ responseForceLogin);
 		}
 		//------------------------------------------------------------------------------------------------------test if successful
 		String responseTest = executeLoginGet("https://" + ip + ":" + port + "/ibm/console/nsc.do");
-		CommonUtils.output("\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------test if successful\r\n\r\n" + responseTest);
+		CommonUtils.output(
+				"\r\n\r\n\r\n-----------------------------------------------------------------------------------------------------test if successful\r\n\r\n"
+						+ responseTest);
 	}
 
-	private static String executeLoginGet(String url){
+	private static String executeLoginGet(String url) {
 		HttpGet httpGet = new HttpGet(url);
 		httpGet.setHeader("Cookie", convertCookieMapToString(cookieMap));
 		RequestConfig requestConfig4 = RequestConfig.custom().setSocketTimeout(20000).setConnectTimeout(20000).build();
 		httpGet.setConfig(requestConfig4);
 		CloseableHttpClient httpClient4 = null;
 		String str = "";
-		try{
+		try {
 			httpClient4 = createSSLInsecureClient();
 			HttpClientContext context4 = HttpClientContext.create();
 			CloseableHttpResponse response = httpClient4.execute(httpGet, context4);
@@ -116,11 +130,11 @@ public class CookieTest {
 		return str;
 	}
 
-	private static String executeLoginPost(String url, Map<String, String> params){
+	private static String executeLoginPost(String url, Map<String, String> params) {
 		String re = "";
 		HttpPost forceLogin = new HttpPost(url);
 		List<NameValuePair> paramsRe = new ArrayList<>();
-		for(String key : params.keySet()){
+		for (String key : params.keySet()) {
 			paramsRe.add(new BasicNameValuePair(key, params.get(key)));
 		}
 		RequestConfig requestConfigRe = RequestConfig.custom().setSocketTimeout(20000).setConnectTimeout(20000).build();
@@ -134,29 +148,29 @@ public class CookieTest {
 			forceLogin.setEntity(new UrlEncodedFormEntity(paramsRe));
 			response = httpClientRe.execute(forceLogin, contextRe);
 			HttpEntity entity = response.getEntity();
-			if(entity != null) {
+			if (entity != null) {
 				re = EntityUtils.toString(entity, "utf-8");
 			}
 			getCookiesFromCookieStore(contextRe.getCookieStore(), cookieMap);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return  re;
+		return re;
 	}
 
-	private static void getCookiesFromCookieStore(CookieStore cookieStore, Map<String, String> cookieMap){
+	private static void getCookiesFromCookieStore(CookieStore cookieStore, Map<String, String> cookieMap) {
 		List<Cookie> cookies = cookieStore.getCookies();
 		for (Cookie cookie : cookies) {
 			cookieMap.put(cookie.getName(), cookie.getValue());
 		}
 	}
 
-	private static String convertCookieMapToString(Map<String, String> map){
+	private static String convertCookieMapToString(Map<String, String> map) {
 		String cookie = "";
-		for(String key : map.keySet()){
+		for (String key : map.keySet()) {
 			cookie += (key + "=" + map.get(key) + "; ");
 		}
-		if(map.size() > 0) {
+		if (map.size() > 0) {
 			cookie = cookie.substring(0, cookie.length() - 2);
 		}
 		return cookie;

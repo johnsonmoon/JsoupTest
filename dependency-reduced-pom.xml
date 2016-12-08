@@ -27,7 +27,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>xuyihao.JsoupTest.App</mainClass>
+                  <mainClass>xuyihao.JsoupTest.discovery.websphere.App</mainClass>
                 </transformer>
               </transformers>
             </configuration>

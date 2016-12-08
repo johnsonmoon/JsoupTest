@@ -3,16 +3,13 @@ package xuyihao.JsoupTest.util;
 import org.apache.commons.net.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -39,6 +36,12 @@ import java.util.List;
  *
  */
 public class HttpUtil {
+	/**
+	 * 发送GET请求
+	 * 
+	 * @param url
+	 * @return
+	 */
 	public static String getHttpResponse(String url) {
 		String str = "";
 		CloseableHttpClient httpclient = null;
@@ -52,27 +55,21 @@ public class HttpUtil {
 			// 设置请求和传输超时时间
 			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000).build();
 			httpget.setConfig(requestConfig);
-
 			// 执行get请求.
 			CloseableHttpResponse response = httpclient.execute(httpget);
-
 			int state = response.getStatusLine().getStatusCode();
-
 			if (state == 404) {
 				return null;
 			}
-
 			try {
 				// 获取响应实体
 				HttpEntity entity = response.getEntity();
 				if (entity != null) {
 					str = EntityUtils.toString(entity, "UTF-8");
-
 					return str;
 				} else {
 					return null;
 				}
-
 			} finally {
 				response.close();
 			}
@@ -89,11 +86,15 @@ public class HttpUtil {
 				e.printStackTrace();
 			}
 		}
-
 		return str;
-
 	}
 
+	/**
+	 * 发送GET请求
+	 * 
+	 * @param httpGet
+	 * @return
+	   */
 	public static String getHttpResponse(HttpGet httpGet) {
 		String str = "";
 		CloseableHttpClient httpclient = null;
@@ -120,7 +121,6 @@ public class HttpUtil {
 			} finally {
 				response.close();
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (GeneralSecurityException ex) {
@@ -148,7 +148,6 @@ public class HttpUtil {
 				sb.append(line);
 			}
 			reader.close();
-
 			return sb.toString();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -163,55 +162,28 @@ public class HttpUtil {
 		return urlConnection;
 	}
 
+	/**
+	 * 获取Post响应
+	 * 
+	 * @param httpPost
+	 * @param params
+	   * @return
+	   */
 	public static String getHttpResponse(HttpPost httpPost, List<NameValuePair> params) {
-
 		String reStr = "";
 		CloseableHttpClient httpclient = HttpClientBuilder.create().build();
 		CloseableHttpResponse response;
-
 		try {
-
 			httpPost.setEntity(new UrlEncodedFormEntity(params));
 			response = httpclient.execute(httpPost);
 			HttpEntity entity = response.getEntity();
 			reStr = EntityUtils.toString(entity, "utf-8");
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			httpPost.releaseConnection();
 		}
 		return reStr;
-	}
-
-	public static String getSessionId4WebLogic(HttpPost httpPost, List<NameValuePair> params, String sessionName) {
-		String sessionId = null;
-		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-		HttpClientContext context;
-
-		try {
-			context = HttpClientContext.create();
-			httpPost.setEntity(new UrlEncodedFormEntity(params));
-			httpClient.execute(httpPost, context);
-
-			CookieStore cookieStore = context.getCookieStore();
-			List<Cookie> cookies = cookieStore.getCookies();
-			for (Cookie cookie : cookies) {
-				String cookieName = cookie.getName();
-				String value = cookie.getValue();
-				if (cookieName.equalsIgnoreCase(sessionName)) {
-					sessionId = value;
-					break;
-				}
-
-			} // end foreach
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			httpPost.releaseConnection();
-		}
-		return sessionId;
 	}
 
 	/**
@@ -226,7 +198,6 @@ public class HttpUtil {
 
 			SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext,
 					new X509HostnameVerifier() {
-
 						public boolean verify(String arg0, SSLSession arg1) {
 							return true;
 						}
@@ -239,53 +210,10 @@ public class HttpUtil {
 
 						public void verify(String host, String[] cns, String[] subjectAlts) throws SSLException {
 						}
-
 					});
-
 			return HttpClients.custom().setSSLSocketFactory(sslConnectionSocketFactory).build();
-
 		} catch (GeneralSecurityException e) {
 			throw e;
 		}
-	}
-
-	public static void main(String[] args) throws IOException, GeneralSecurityException {
-
-		String resp = getHttpResponse("https://10.1.240.161:9043/ibm/console/logon.jsp");
-
-		System.out.println(resp);
-
-		/*
-		 * String userName = "wasadmin"; String password = "admin";
-		 * 
-		 * String jSecChkUrl =
-		 * "https://10.1.240.161:9043/ibm/console/j_security_check"; HttpPost
-		 * httpPost = new HttpPost(jSecChkUrl); List<NameValuePair> params = new
-		 * ArrayList<>(); params.add(new BasicNameValuePair("j_username",
-		 * userName)); params.add(new BasicNameValuePair("j_password", password));
-		 * 
-		 * RequestConfig requestConfig =
-		 * RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000).
-		 * build(); httpPost.setConfig(requestConfig);
-		 * 
-		 * CloseableHttpClient httpClient = createSSLInsecureClient();
-		 * HttpClientContext context;
-		 * 
-		 * try { context = HttpClientContext.create(); httpPost.setEntity(new
-		 * UrlEncodedFormEntity(params)); httpClient.execute(httpPost, context);
-		 * 
-		 * CookieStore cookieStore = context.getCookieStore(); List<Cookie> cookies
-		 * = cookieStore.getCookies(); for (Cookie cookie : cookies) { String
-		 * cookieName = cookie.getName(); String value = cookie.getValue(); if
-		 * (cookieName.equalsIgnoreCase("LtpaToken")) {
-		 * 
-		 * }else if(cookieName.equalsIgnoreCase("LtpaToken2")) {
-		 * 
-		 * }
-		 * 
-		 * } // end foreach
-		 * 
-		 * }catch (Exception e){ e.printStackTrace(); }
-		 */
 	}
 }
